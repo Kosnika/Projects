@@ -1,0 +1,269 @@
+#include "Header.h"
+using namespace std;
+
+/// MAIN COORDINATES:
+int menuRow = 3, menuCol = 6;    /// координаты меню
+int gameRow = 3, gameCol = 6;    ///координаты откуда рисуется доска
+int Select = 0;   // выбор в меню 
+
+
+
+/// MAIN COLORS
+int SelFon = _COLOR::bright_white;     ///
+int SelSym = _COLOR::light_purple;     /// Выбранные пункты меню (цвет)
+int UnselFon = _COLOR::black;          ///
+int UnselSym = _COLOR::bright_white;   /// Невыбранные пункты меню (цвет)
+
+
+
+/// STANDART SYSTEM COLORS
+int stdFon = _COLOR::black;
+int stdSym = _COLOR::white;
+
+void Init()
+{
+	system("cls");
+	setlocale(LC_ALL, "RUS");
+	system("color 07");   /// чернобелый цвет системы
+	CursorHide(FALSE, 20);
+}
+
+void gen_rand(int* d)
+{
+	srand(time(0));
+	int count = 0;
+	int j = 0;
+	int temp;
+	bool is_in_list = false;
+	while (count < 15)
+	{
+		is_in_list = false;
+		temp = rand() % 15 + 1;
+		for (int i = 0; i < 16; i++)
+		{
+			if (temp == d[i])
+			{
+				is_in_list = true;
+				break;
+			}	
+		}
+		if (!is_in_list)
+		{
+			d[j] = temp;
+			j++;
+			count++;
+		}
+		
+		
+	}
+
+}
+
+void Start_game()
+{
+	int d[16] = { 0 };
+	gen_rand(d);
+
+	int p[4][4];
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			p[i][j] = d[i * 4 + j];
+		}
+	}
+
+
+
+	int tempRow = gameRow + 1, tempCol = gameCol + 2;
+	bool win = false;
+	int Col = 20, Row = 10;
+	int col_x = 0, row_x = 0;     //индекс на доске 
+
+	while (true)
+	{
+		system("cls");                //рисование доски 
+		SetPos(gameRow, gameCol);
+		cout << "+---+---+---+---+" << endl;
+		SetPos(gameRow + 1, gameCol);
+		cout << "|   |   |   |   |" << endl;
+		SetPos(gameRow + 2, gameCol);
+		cout << "+---+---+---+---+" << endl;
+		SetPos(gameRow + 3, gameCol);
+		cout << "|   |   |   |   |" << endl;
+		SetPos(gameRow + 4, gameCol);
+		cout << "+---+---+---+---+" << endl;
+		SetPos(gameRow + 5, gameCol);
+		cout << "|   |   |   |   |" << endl;
+		SetPos(gameRow + 6, gameCol);
+		cout << "+---+---+---+---+" << endl;
+		SetPos(gameRow + 7, gameCol);
+		cout << "|   |   |   |   |" << endl;
+		SetPos(gameRow + 8, gameCol);
+		cout << "+---+---+---+---+" << endl;
+
+
+
+
+		for (int i = 0; i < 4; i++)      //заполнение доски 
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				if (i * 4 + j == 15)
+					break;
+
+				SetPos(tempRow, tempCol);
+				cout << p[i][j];
+				tempCol += 4;
+
+			}
+			tempRow += 2;
+			tempCol = gameCol + 2;
+		}
+
+		
+
+		SetPos(Row, Col);
+		row_x = (Row - 3) / 2;
+		col_x = (Col - 6) / 4;
+		CursorHide(TRUE, 20);
+
+		
+		if (win)
+			break;
+
+		int key = _getch();
+		switch (key)
+		{
+		case _KEY::UP:
+			if (tempRow > 4)
+			{
+				swap(p[row_x][col_x], p[Row][Col]);
+			}
+		}
+
+
+		
+
+		SetPos(30, 30);
+		system("pause");
+		//Init();
+	}
+	
+}
+
+
+
+void Menu()
+{
+	while (true)
+	{
+		if (Select == 0)
+		{
+			SetColor(SelFon, SelSym);
+		}
+		else
+		{
+			SetColor(UnselFon, UnselSym);
+		}
+		SetPos(menuRow + 0, menuCol);
+		cout << "Начать новую игру" << endl;
+		if (Select == 1)
+		{
+			SetColor(SelFon, SelSym);
+		}
+		else
+		{
+			SetColor(UnselFon, UnselSym);
+		}
+		SetPos(menuRow + 1, menuCol);
+		cout << "Продолжить игру" << endl;
+
+		if (Select == 2)
+		{
+			SetColor(SelFon, SelSym);
+		}
+		else
+		{
+			SetColor(UnselFon, UnselSym);
+		}
+		SetPos(menuRow + 2, menuCol);
+		cout << "Рекорды" << endl;
+
+		if (Select == 3)
+		{
+			SetColor(SelFon, SelSym);
+		}
+		else
+		{
+			SetColor(UnselFon, UnselSym);
+		}
+		SetPos(menuRow + 3, menuCol);
+		cout << "О программе" << endl;
+
+		if (Select == 4)
+		{
+			SetColor(SelFon, SelSym);
+		}
+		else
+		{
+			SetColor(UnselFon, UnselSym);
+		}
+		SetPos(menuRow + 4, menuCol);
+		cout << "Выход" << endl;
+
+		SetColor(stdFon, stdSym);  //чтобы при выходе результат программы был стандартным цветом 
+		
+		
+
+		if (_kbhit())
+		{
+			
+			int key;
+			key = _getch();
+
+			switch (key)
+			{
+			case _KEY::UP:
+				if (Select == 0)
+					Select = 4;
+				else
+					Select--;
+				break;
+
+			case _KEY::DOWN:
+				if (Select == 4)
+					Select = 0;
+				else
+					Select++;
+				break;
+
+			case _KEY::ENTER:
+				switch (Select)
+				{
+				case 0: Start_game(); break;
+				case 1: break;
+				case 2: break;
+				case 3: break;
+				case 4: return; break;
+				default: break;
+				}
+			}
+			
+
+
+		}
+
+	}
+	
+}
+
+
+int main()
+{
+	Init();
+	Menu();
+	//Start_game();
+	SetPos(30, 50);
+	return 0;
+}
