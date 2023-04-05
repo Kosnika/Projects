@@ -45,7 +45,7 @@ void gen_rand(int* d)
 			{
 				is_in_list = true;
 				break;
-			}	
+			}
 		}
 		if (!is_in_list)
 		{
@@ -53,14 +53,31 @@ void gen_rand(int* d)
 			j++;
 			count++;
 		}
-		
-		
+
+
 	}
 
 }
 
-void Start_game()
+void board_draw_1()
 {
+	system("cls");                //рисование доски 
+	SetPos(gameRow, gameCol);
+	ifstream fin;
+	fin.open("board.txt");
+	char str[100];
+	int i = 0;
+	while (!fin.eof())
+	{
+		fin.getline(str, 100);
+		SetPos(gameRow + i, gameCol);
+		cout << str << endl;
+		i++;
+
+	}
+	fin.close();
+
+
 	int d[16] = { 0 };
 	gen_rand(d);
 
@@ -72,16 +89,53 @@ void Start_game()
 			p[i][j] = d[i * 4 + j];
 		}
 	}
+}
+
+void board_draw_2()
+{
+	system("cls");                //рисование доски 
+	SetPos(gameRow, gameCol);
+	ifstream fin;
+	fin.open("board.txt");
+	char str[100];
+	int i = 0;
+	while (!fin.eof())
+	{
+		fin.getline(str, 100);
+		SetPos(gameRow + i, gameCol);
+		cout << str << endl;
+		i++;
+
+	}
+	fin.close();
+}
 
 
+void Start_game()
+{
 
 	int tempRow = gameRow + 1, tempCol = gameCol + 2;
 	bool win = false;
+	int Col = 20, Row = 10;        //индекс курсора
+	int col_x = 0, row_x = 0;     //индекс на доске 
+	int col_y = 3, row_y = 3;       // индекс элемента курсора
 
 
 	system("cls");                //рисование доски 
 	SetPos(gameRow, gameCol);
-	cout << "+---+---+---+---+" << endl;
+	ifstream fin;
+	fin.open("board.txt");
+	char str[100];
+	int i = 0;
+	while (!fin.eof())
+	{
+		fin.getline(str, 100);
+		SetPos(gameRow + i, gameCol);
+		cout << str << endl;
+		i++;
+
+	}
+	/*cout << "+---+---+---+---+" << endl;
 	SetPos(gameRow + 1, gameCol);
 	cout << "|   |   |   |   |" << endl;
 	SetPos(gameRow + 2, gameCol);
@@ -97,36 +151,36 @@ void Start_game()
 	SetPos(gameRow + 7, gameCol);
 	cout << "|   |   |   |   |" << endl;
 	SetPos(gameRow + 8, gameCol);
-	cout << "+---+---+---+---+" << endl;
-
-	
-	
-	
-	for (int i = 0; i < 4; i++)      //заполнение доски 
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			if (i*4+j == 15)
-				break;
-
-			SetPos(tempRow, tempCol);
-			cout << p[i][j];
-			tempCol += 4;
-			
-		}
-		tempRow+=2;
-		tempCol = gameCol + 2;
-	}
-
-	tempCol = 20;
-	tempRow = 10;
-
-	SetPos(tempRow, tempCol);
-	
-	CursorHide(TRUE, 20);
+	cout << "+---+---+---+---+" << endl;*/
+	SetPos(Row, Col);
 
 	while (true)
 	{
+
+		SetPos(Row, Col);
+		tempRow = gameRow + 1;
+		tempCol = gameCol + 2;
+		for (int i = 0; i < 4; i++)      //заполнение доски 
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				SetPos(tempRow, tempCol);
+				if (p[i][j] != 0)
+					cout << p[i][j];
+				else
+					cout << "  ";
+				tempCol += 4;
+
+			}
+			tempRow += 2;
+			tempCol = gameCol + 2;
+		}
+
+
+		row_x = (Row - 3) / 2;
+		col_x = (Col - 6) / 4;
+		CursorHide(TRUE, 20);
+		SetPos(Row, Col);
 		if (win)
 			break;
 
@@ -134,21 +188,77 @@ void Start_game()
 		switch (key)
 		{
 		case _KEY::UP:
-			if (tempRow > 4)
+			if (Row > 4)
 			{
 
+				Row -= 2;
+				//Col -= 4;
+				row_y = (Row - 3) / 2;
+				//col_y = (Col - 6) / 4;
+				SetPos(Row, Col);
+				swap(p[row_x][col_x], p[row_y][col_y]);
 			}
-		}
-		
-		
-	}
+			break;
 
+		case _KEY::DOWN:
+			if (Row < 10)
+			{
+				Row += 2;
+				row_y = (Row - 3) / 2;
+				SetPos(Row, Col);
+				swap(p[row_x][col_x], p[row_y][col_y]);
+			}
+			break;
+
+		case _KEY::RIGHT:
+			if (Col < 20)
+			{
+				Col += 4;
+				col_y = (Col - 6) / 4;
+				SetPos(Row, Col);
+				swap(p[row_x][col_x], p[row_y][col_y]);
+			}
+			break;
+
+		case _KEY::LEFT:
+			if (Col > 9)
+			{
+				Col -= 4;
+				col_y = (Col - 6) / 4;
+				SetPos(Row, Col);
+				swap(p[row_x][col_x], p[row_y][col_y]);
+			}
+			break;
+		case _KEY::ESC:
+			CursorHide(FALSE, 20);
+			Init();
+			return;  break;
+		}
+
+
+	}
 	SetPos(30, 30);
 	system("pause");
 	//Init();
+
 }
 
-
+void About()
+{
+	system("cls");
+	SetPos(5, 8);
+	cout << "Название игры - \"Пятнашки\"";
+	SetPos(6, 8);
+	cout << "Цель игры: путем нажатия на стрелки, передвигать пустую ячейку,";
+	SetPos(7, 8);
+	cout << "тем самым расставить все числа в порядке их возрастания.";
+	SetPos(10, 8);
+	cout << "Автор этой программы - ученица \"IT STEP ACADEMY\" - Негмат Аружан";
+	SetPos(11, 8);
+	cout << "Данная программа является экзаменационным заданием." << endl;
+	system("pause");
+	system("cls");
+}
 
 void Menu()
 {
@@ -209,12 +319,12 @@ void Menu()
 		cout << "Выход" << endl;
 
 		SetColor(stdFon, stdSym);  //чтобы при выходе результат программы был стандартным цветом 
-		
-		
+
+
 
 		if (_kbhit())
 		{
-			
+
 			int key;
 			key = _getch();
 
@@ -240,18 +350,18 @@ void Menu()
 				case 0: Start_game(); break;
 				case 1: break;
 				case 2: break;
-				case 3: break;
+				case 3: About(); break;
 				case 4: return; break;
 				default: break;
 				}
 			}
-			
+
 
 
 		}
 
 	}
-	
+
 }
 
 
@@ -260,6 +370,6 @@ int main()
 	Init();
 	Menu();
 	//Start_game();
-	SetPos(30, 50);
+	SetPos(20, 50);
 	return 0;
 }
