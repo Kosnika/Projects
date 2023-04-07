@@ -10,7 +10,7 @@ int Select = 0;   // выбор в меню
 
 /// MAIN COLORS
 int SelFon = _COLOR::bright_white;     ///
-int SelSym = _COLOR::light_purple;     /// Выбранные пункты меню (цвет)
+int SelSym = _COLOR::light_red;     /// Выбранные пункты меню (цвет)
 int UnselFon = _COLOR::black;          ///
 int UnselSym = _COLOR::bright_white;   /// Невыбранные пункты меню (цвет)
 
@@ -19,6 +19,11 @@ int UnselSym = _COLOR::bright_white;   /// Невыбранные пункты �
 /// STANDART SYSTEM COLORS
 int stdFon = _COLOR::black;
 int stdSym = _COLOR::white;
+
+
+/// last cursor 
+const int std_col = 20, std_row = 10;        //индекс курсора
+int Row = std_row, Col = std_col;
 
 void Init()
 {
@@ -59,13 +64,74 @@ void gen_rand(int* d)
 
 }
 
-void Start_game()
+void win_case(int step_counter, double seconds)
 {
-	int d[16] = { 0 };
-	gen_rand(d);
+	system("cls");
+	SetPos(gameRow, gameCol);
+	cout << "Поздравляю, вы выиграли!";
+	SetPos(gameRow + 1, gameCol);
+	cout << "Всего ходов потребовалось: " << step_counter;
+	SetPos(gameRow + 2, gameCol);
+	cout << "Времени понадобилось: " << seconds << " секунд";
+	SetPos(gameRow + 3, gameCol);
+	system("pause");
+	int key = _getch();
+	switch (key)
+	{
+	case _KEY::ESC:
+		CursorHide(FALSE, 20);
+		Init();
+		return;  break;
+	}
 
-	int p[4][4];
+	return;
+}
+
+void Start_game(int option, int &Row, int &Col)
+{
+
+	int tempRow, tempCol;       ///для заполнения доски 
+	bool win = false;
+	int step_counter = 0;      ///счетчик ходов 
+
+	int col_x = 0, row_x = 0;     //индекс на доске 
+	int col_y = 3, row_y = 3;       // индекс элемента курсора в массиве 
+
+	int d[16] = { 0 };  //сюда будем генерировать числа 
+	int p[4][4];        //отсюда будем заполнять доску 
 	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			p[i][j] = 0;
+		}
+	}
+
+	system("cls");
+	if (option == 1)        //если новая игра 
+	{
+		gen_rand(d);   ///генерируем числа 
+		Row = std_row;   //нижний правый угол 
+		Col = std_col;    //нижний правый угол 
+	} 
+	else    //если продолжить игру 
+	{
+		ifstream fin1;       /// считываем последнее расположение чисел с прошлой игры
+		string slovo; 
+		fin1.open("continue.txt");
+		int i = 0;
+		while (!fin1.eof())
+		{
+			fin1 >> slovo;
+			int chislo = stoi(slovo);   //string -> int 
+			d[i] = chislo;           
+			i++;
+		}
+		fin1.close();
+	}
+
+
+	for (int i = 0; i < 4; i++)         ///преобразовываем сгенерированный массив в двумерный,  чтобы вывести на консоль числа 
 	{
 		for (int j = 0; j < 4; j++)
 		{
@@ -74,38 +140,41 @@ void Start_game()
 	}
 
 
-
-	int tempRow = gameRow + 1, tempCol = gameCol + 2;
-	bool win = false;
-	int Col = 20, Row = 10;        //индекс курсора
-	int col_x = 0, row_x = 0;     //индекс на доске 
-	int col_y = 3, row_y = 3;       // индекс элемента курсора
-
-
-	system("cls");                //рисование доски 
+	ifstream fin;                    /// рисование доски 
+	fin.open("board.txt");
+	string line;
 	SetPos(gameRow, gameCol);
-	cout << "+---+---+---+---+" << endl;
-	SetPos(gameRow + 1, gameCol);
-	cout << "|   |   |   |   |" << endl;
-	SetPos(gameRow + 2, gameCol);
-	cout << "+---+---+---+---+" << endl;
-	SetPos(gameRow + 3, gameCol);
-	cout << "|   |   |   |   |" << endl;
-	SetPos(gameRow + 4, gameCol);
-	cout << "+---+---+---+---+" << endl;
-	SetPos(gameRow + 5, gameCol);
-	cout << "|   |   |   |   |" << endl;
-	SetPos(gameRow + 6, gameCol);
-	cout << "+---+---+---+---+" << endl;
-	SetPos(gameRow + 7, gameCol);
-	cout << "|   |   |   |   |" << endl;
-	SetPos(gameRow + 8, gameCol);
-	cout << "+---+---+---+---+" << endl;
-	SetPos(Row, Col);
+	int i = 0;
+	while (!fin.eof())
+	{
+		getline(fin, line);
+		SetPos(gameRow + i, gameCol);
+		cout << line << endl;
+		i++;
+	}
+	fin.close();
+
+
+	/*int tempik = 1;                      ///ДОСКА ДЛЯ ПРОВЕРКИ 
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			if (tempik<16)
+			{
+				p[i][j] = tempik;
+				tempik++;
+			}
+		}
+	}
+	p[3][3] = 0;
+	swap(p[3][2], p[2][3]);
+	swap(p[2][3], p[2][2]);*/
+	clock_t start = clock();    //начало отсчета времени
 	
 	while (true)
 	{
-		
+
 		SetPos(Row, Col);
 		tempRow = gameRow + 1;
 		tempCol = gameCol + 2;
@@ -126,26 +195,66 @@ void Start_game()
 		}
 
 
-		row_x = (Row - 3) / 2;
+		row_x = (Row - 3) / 2; 
 		col_x = (Col - 6) / 4;
 		CursorHide(TRUE, 20);
 		SetPos(Row, Col);
+		int temp = 0;
+
+
+		for (int i = 0; i < 4; i++)   //Заполнение массива Д, чтобы проверить выишрыш 
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				if (temp < 16)
+				{
+					d[temp] = p[i][j];
+					temp++;
+				}
+			}
+		}
+		temp = 0;
+
+		if (d[15] == 0)                          //проверка последовательности чтобы определить выигрыш
+		{
+			for (int i = 2; i < 16; i++)
+			{
+				if (d[temp] + 1 == i)
+				{
+					win = true;
+					temp++;
+				}
+				else
+				{
+					win = false;
+					break;
+				}
+			}
+		}
+		 
+		
 		if (win)
+		{
+			clock_t end = clock();
+			double seconds = (double)(end - start) / CLOCKS_PER_SEC;
+			win_case(step_counter, seconds);
 			break;
+		}
+			
 
 		int key = _getch();
+		
 		switch (key)
 		{
 		case _KEY::UP:
 			if (Row > 4)
 			{
-
-				Row -= 2; 
-				//Col -= 4;
+				Row -= 2;
 				row_y = (Row - 3) / 2;
-				//col_y = (Col - 6) / 4;
+				col_y = (Col - 6) / 4;
 				SetPos(Row, Col);
 				swap(p[row_x][col_x], p[row_y][col_y]);
+				step_counter++;
 			}
 			break;
 
@@ -154,8 +263,11 @@ void Start_game()
 			{
 				Row += 2;
 				row_y = (Row - 3) / 2;
+				col_y = (Col - 6) / 4;
 				SetPos(Row, Col);
 				swap(p[row_x][col_x], p[row_y][col_y]);
+				step_counter++;
+
 			}
 			break;
 
@@ -164,8 +276,11 @@ void Start_game()
 			{
 				Col += 4;
 				col_y = (Col - 6) / 4;
+				row_y = (Row - 3) / 2;
 				SetPos(Row, Col);
 				swap(p[row_x][col_x], p[row_y][col_y]);
+				step_counter++;
+
 			}
 			break;
 
@@ -174,24 +289,73 @@ void Start_game()
 			{
 				Col -= 4;
 				col_y = (Col - 6) / 4;
+				row_y = (Row - 3) / 2;
 				SetPos(Row, Col);
 				swap(p[row_x][col_x], p[row_y][col_y]);
+				step_counter++;
+				
 			}
 			break;
+		case _KEY::ESC:
+				CursorHide(FALSE, 20);
+				Init();
+				ofstream fout;
+				fout.open("continue.txt");
+				for (int i = 0; i < 4; i++)
+				{
+					for (int j = 0; j < 4; j++)
+					{
+						fout << p[i][j] << ' ';
+					}
+					
+				}
+				fout.close();
+				return;  break;
+					
+		}
 
-		}		
 
-
-
-
-		
 	}
 	SetPos(30, 30);
 	system("pause");
 	//Init();
 
+  }
+
+void About()
+{
+	system("cls");
+	SetPos(gameRow, gameCol);
+	cout << "Название игры - \"Пятнашки\"";
+	SetPos(gameRow+1, gameCol);
+	cout << "Цель игры: путем нажатия на стрелки, передвигать пустую ячейку,";
+	SetPos(gameRow+2, gameCol);
+	cout << "тем самым расставить все числа в порядке их возрастания.";
+	SetPos(gameRow+3, gameCol);
+	cout << "Автор этой программы - ученица \"IT STEP ACADEMY\" - Негмат Аружан";
+	SetPos(gameRow+4, gameCol);
+	cout << "Данная программа является экзаменационным заданием." << endl;
+	SetPos(gameRow+7, gameCol);
+	system("pause");
+	system("cls");
 }
 
+
+void records()
+{
+	system("cls");
+	SetPos(gameRow, gameCol);
+	cout << "Данная секция пока не работает";
+	SetPos(gameRow + 5, gameCol);
+	system("pause");
+	int key = _getch();
+		switch(key)
+	{
+		case _KEY::ESC:
+			system("cls");
+			return; break;
+	}
+}
 
 
 void Menu()
@@ -281,10 +445,10 @@ void Menu()
 			case _KEY::ENTER:
 				switch (Select)
 				{
-				case 0: Start_game(); break;
-				case 1: break;
-				case 2: break;
-				case 3: break;
+				case 0: Start_game(1,Row, Col); break;
+				case 1: Start_game(2,Row,Col); break;
+				case 2: records(); break;
+				case 3: About(); break;
 				case 4: return; break;
 				default: break;
 				}
@@ -303,7 +467,6 @@ int main()
 {
 	Init();
 	Menu();
-	//Start_game();
 	SetPos(20, 50);
 	return 0;
 }
